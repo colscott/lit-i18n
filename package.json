@@ -1,0 +1,36 @@
+{
+  "name": "lit-i18n",
+  "version": "0.0.1",
+  "description": "lit-element based i18n solution backed by i18next",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:unit",
+    "test:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/colscott/lit-i18n.git"
+  },
+  "keywords": [
+    "i18n",
+    "lit-element",
+    "lit-html",
+    "i18n",
+    "web",
+    "component"
+  ],
+  "author": "colin scott",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/colscott/lit-i18n/issues"
+  },
+  "homepage": "https://github.com/colscott/lit-i18n#readme",
+  "dependencies": {
+    "i18next": "^17.0.6",
+    "lit-html": "^1.1.1"
+  },
+  "devDependencies": {
+    "dev-lib-colscott": "^1.1.6",
+    "express": "^4.17.1"
+  }
+}

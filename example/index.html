@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="module">
+            import {i18next} from '../../src/lit-i18n.js';
+
+            console.log(i18next.init({
+                lng: 'en',
+                debug: true,
+                resources: {
+                    en: {
+                        translation: {
+                            "introduceself": "My name is {{name}}",
+                            "divtitle": "Element title attribute",
+                            "whatishow": "{{what}} is {{how}}",
+                            "datamodel": "{person.name} is a {person.age} year old and is male: {person.male}",
+                            "entername": "Enter Name"
+                        }
+                    },
+                    fr: {
+                        translation: {
+                            key: 'Un peu de traduction',
+                            introduceself: "Je m'appelle {{name}}",
+                            divtitle: "Attribut de titre d'élément",
+                            whatishow: '{{what}} est {{how}}',
+                            datamodel: '{{person.name}} a {{person.age}} ans et est un homme: {{person.male}}',
+                            entername: 'Entrez le nom',
+                        },
+                    },
+                }
+            }));
+        </script>
+        <script type="module">
+            import { html, render } from '../node_modules/lit-html/lit-html.js';
+            import { translate as t } from '../src/lit-i18n.js';
+            customElements.define('i18n-example', class I18nExample extends HTMLElement {
+                static get observedAttributes() { return ['name']; }
+                
+                attributeChangedCallback(name, oldValue, newValue) {
+                    switch(name) {
+                        case 'name':
+                            this.name = newValue;
+                            this.render();
+                    }
+                }
+
+                constructor() {
+                    super();
+
+                    this.name = 'Fred';
+                }
+
+                connectedCallback() {
+                    this.render();
+                }
+
+                get renderTemplate() {
+                    return html`
+                        <span>${t('introduceself', {name: this.name})}</span>
+                        <div title="${t('divtitle')}">1</div>
+                        <div title="Title of this DIV already translated">2</div>
+                        <div title="${t('whatishow', { what: 'i18next', how: 'great' })}">3</div>
+                        <span>${t('datamodel', {person: { name: "Colin", age: 21, male: true }})}</span>
+                        <input type="text" placeholder="${t('entername')}">
+                        <input type="text" placeholder="${t('noneExistentKey')}">
+                        <input type="text" placeholder="translated Enter Your Name">
+                    `;
+                }
+
+                render(){
+                    render(this.renderTemplate, this);
+                }
+            });
+        </script>
+    </head>
+    <body>
+        <select onchange="i18next.changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="fr">French</option>
+        </select>
+        <i18n-example></i18n-example>
+        <i18n-example-2></i18n-example-2>
+    </body>
+</html>
