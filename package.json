@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "lit-element based i18n solution backed by i18next",
   "main": "index.js",
+  "files": [
+    "/index.js",
+    "/src/"
+  ],
   "scripts": {
     "test": "npm run test:unit",
     "test:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js"
