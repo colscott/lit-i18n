@@ -1,6 +1,6 @@
 {
   "name": "lit-i18n",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "lit-element based i18n solution backed by i18next",
   "main": "index.js",
   "files": [
