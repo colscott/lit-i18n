@@ -1,5 +1,8 @@
 # lit-i18n
 i18next lit-html directive (could possible add other i18n backends).
+
+[![Build Status](https://dev.azure.com/colscott/lit-i18n/_apis/build/status/colscott.lit-i18n?branchName=master)](https://dev.azure.com/colscott/lit-i18n/_build/latest?definitionId=2&branchName=master)
+
 ## Install
     npm install lit-i18n
 ## Usage
