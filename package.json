@@ -21,7 +21,9 @@
     "lit-html",
     "i18n",
     "web",
-    "component"
+    "component",
+    "lit html i18n",
+    "i18next"
   ],
   "author": "colin scott",
   "license": "MIT",

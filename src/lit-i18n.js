@@ -20,7 +20,10 @@ export { html, svg, render };
  */
 export const registry = new Map();
 
-/** Removes parts that are no longer connected */
+/**
+ * Removes parts that are no longer connected.
+ * Called internally on a timer but can also be called manually.
+ */
 export const registryCleanup = () => {
     registry.forEach((details, part) => {
         if (isConnected(part) === false) {

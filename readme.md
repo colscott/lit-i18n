@@ -71,3 +71,60 @@ lit-i18n exposes a directive called translate. The translate directive has the s
             `;
         }
     }
+
+## Browser first ES6 imports
+This code uses ES6 style import in a way that they can be loaded directly in the browser. To do this is uses relatives that start with either "/", "./" or "../".
+To do this it references thrid party sripts like this:
+
+    import { html } from '/node_modules/lit-html/lit-html.js';
+
+However, this doesn't play nicely with tools like TypeScript or Webpack. We need configure these tools to recongnise the "/node_modules" path.
+Fortunately this is easy:
+
+### VS Code
+To get intellisense to play nicely in VS Code you should set up a tsconfig.json or jsconfig.json as below.
+
+### TypeScript
+In your tsconfig.json or jsconfig.json:
+
+    {
+        "compilerOptions": {
+            ....
+            "baseUrl": ".", // This must be specified if "paths" is.
+            "paths": {
+                "/node_modules/*": ["node_modules/*"],
+            },
+            ....
+        },
+    }
+
+### Webpack
+In your webpack config add a resolver:
+
+    resolve: {
+        ....
+        alias: {
+            '/node_modules': path.resolve(__dirname, 'node_modules'),
+        },
+    },
+
+### ESLint
+In order to get ESLint to recognise the import:
+
+    modules.exports = {
+        ....
+        settings : {
+            "import/resolver": {
+                node: {
+                    extensions: [ 'js', 'mjs' ]
+                },
+                alias: {
+                    map: [
+                        ["/node_modules", "./node_modules"]
+                    ],
+                    expressions: [ 'js', 'mjs' ]
+                }
+            }
+        },
+        ....
+    }
