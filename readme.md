@@ -73,12 +73,13 @@ lit-i18n exposes a directive called translate. The translate directive has the s
     }
 
 ## Browser first ES6 imports
-This code uses ES6 style import in a way that they can be loaded directly in the browser. To do this is uses relatives that start with either "/", "./" or "../".
-To do this it references thrid party sripts like this:
+This code uses ES6 style import in such a way that they can be loaded directly in the browser. To do this it uses relative import paths that start with either "/", "./" or "../".
+For example:
 
     import { html } from '/node_modules/lit-html/lit-html.js';
 
 However, this doesn't play nicely with tools like TypeScript or Webpack. We need configure these tools to recongnise the "/node_modules" path.
+
 Fortunately this is easy:
 
 ### VS Code
