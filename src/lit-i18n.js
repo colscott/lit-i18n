@@ -34,9 +34,34 @@ export const registryCleanup = () => {
 /** Since lit-html does not have a life cycle hook for part disconnected, we need to record and manage parts ourselves. */
 setInterval(registryCleanup, 10000);
 
-/** @type {import('/node_modules/i18next/index').default} */
-// @ts-ignore
-const i18n = i18next;
+let initialized = false;
+
+/**
+ * Lazily sets up i18next. Incase this library is loaded before i18next has been loaded.
+ * This defers i18next setup until the first translation is requested.
+ * @param {string|string[]} keys
+ * @param {any} opts
+ * @returns {string}
+ */
+function translateAndInit(keys, opts) {
+    /** @type {import('/node_modules/i18next/index').default} */
+    // @ts-ignore
+    const i18n = i18next;
+
+    if (initialized === false) {
+        /** Handle language changes */
+        i18n.on('languageChanged', () => {
+            registry.forEach((details, part) => {
+                if (isConnected(part)) {
+                    setPartValue(part, details.keys, details.options);
+                }
+            });
+        });
+        initialized = true;
+    }
+
+    return i18n.t(keys, opts);
+}
 
 /**
  * @param {import('/node_modules/lit-html/lib/part').Part} part
@@ -49,15 +74,6 @@ const isConnected = part => {
         return part.element.isConnected;
     throw new Error('Unsupport Part');
 };
-
-/** Handle language changes */
-i18n.on('languageChanged', () => {
-    registry.forEach((details, part) => {
-        if (isConnected(part)) {
-            setPartValue(part, details.keys, details.options);
-        }
-    });
-});
 
 /**
  * @param {import('/node_modules/lit-html/lib/part').Part}  part
@@ -72,7 +88,7 @@ const setPartValue = (part, keys, options) => {
         opts = options();
     }
 
-    const translation = i18n.t(keys, opts);
+    const translation = translateAndInit(keys, opts);
 
     if (part.value === translation) {
         return;
