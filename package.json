@@ -9,7 +9,9 @@
   ],
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js"
+    "test:ci": "npm run test:ci:unit",
+    "test:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js --no-single-run",
+    "test:ci:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js --single-run"
   },
   "repository": {
     "type": "git",
