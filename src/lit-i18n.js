@@ -10,7 +10,6 @@ import {
     BooleanAttributePart,
     EventPart,
 } from '/node_modules/lit-html/lit-html.js';
-import '/node_modules/i18next/i18next.js';
 
 export { html, svg, render };
 
@@ -38,8 +37,6 @@ setInterval(registryCleanup, 10000);
 /** @type {import('/node_modules/i18next/index').default} */
 // @ts-ignore
 const i18n = i18next;
-
-export { i18n as i18next };
 
 /**
  * @param {import('/node_modules/lit-html/lib/part').Part} part

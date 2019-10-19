@@ -1,6 +1,7 @@
-/* global describe, beforeAll, afterAll, jasmine, it, expect */
+/* global i18next, describe, beforeAll, afterAll, jasmine, it, expect */
 /* Jasmine will be loaded by the test framework. No need to import it. */
-import { translate as t, i18next, html, render, registry, registryCleanup } from '../../src/lit-i18n.js';
+import '../../node_modules/i18next/i18next.js';
+import { translate as t, html, render, registry, registryCleanup } from '../../src/lit-i18n.js';
 
 /** i18next config */
 i18next.init({

@@ -1,6 +1,6 @@
 {
   "name": "lit-i18n",
-  "version": "1.0.6",
+  "version": "1.1.1",
   "description": "lit-element based i18n solution backed by i18next",
   "main": "index.js",
   "files": [
@@ -34,11 +34,14 @@
   },
   "homepage": "https://github.com/colscott/lit-i18n#readme",
   "dependencies": {
-    "i18next": "^17.0.6",
     "lit-html": "^1.1.1"
   },
   "devDependencies": {
+    "i18next": "^17.0.6",
     "dev-lib-colscott": "^1.1.7",
     "express": "^4.17.1"
+  },
+  "peerDependencies": {
+    "i18next": "^17.0.6"
   }
 }
