@@ -20,5 +20,5 @@ steps:
   displayName: 'npm install'
 
 - script: |
-    npm test
-  displayName: 'npm test'
+    npm run test:ci
+  displayName: 'npm run test:ci'

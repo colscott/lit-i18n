@@ -9,7 +9,9 @@
   ],
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js"
+    "test:ci": "npm run test:ci:unit",
+    "test:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js --no-single-run",
+    "test:ci:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js --single-run"
   },
   "repository": {
     "type": "git",
@@ -32,11 +34,14 @@
   },
   "homepage": "https://github.com/colscott/lit-i18n#readme",
   "dependencies": {
-    "i18next": "^17.0.6",
     "lit-html": "^1.1.1"
   },
   "devDependencies": {
+    "i18next": "^17.0.6",
     "dev-lib-colscott": "^1.1.7",
     "express": "^4.17.1"
+  },
+  "peerDependencies": {
+    "i18next": "^17.0.6"
   }
 }
