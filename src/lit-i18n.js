@@ -36,6 +36,14 @@ setInterval(registryCleanup, 10000);
 
 let initialized = false;
 
+const updateAll = () => {
+    registry.forEach((details, part) => {
+        if (isConnected(part)) {
+            setPartValue(part, details.keys, details.options);
+        }
+    });
+}
+
 /**
  * Lazily sets up i18next. Incase this library is loaded before i18next has been loaded.
  * This defers i18next setup until the first translation is requested.
@@ -50,13 +58,8 @@ function translateAndInit(keys, opts) {
 
     if (initialized === false) {
         /** Handle language changes */
-        i18n.on('languageChanged', () => {
-            registry.forEach((details, part) => {
-                if (isConnected(part)) {
-                    setPartValue(part, details.keys, details.options);
-                }
-            });
-        });
+        i18n.on('languageChanged', updateAll);
+        i18n.store.on('added', updateAll);
         initialized = true;
     }
 
