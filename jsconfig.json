@@ -2,11 +2,8 @@
   "compilerOptions": {
     "target": "es2017",
     "lib": ["esnext.array", "esnext", "es2017", "dom"],
-    "baseUrl": "./", // This must be specified if "paths" is.
     "rootDir": "./",
-    "paths": {
-      "/node_modules/*": ["node_modules/*"]
-    }
+    "moduleResolution": "node"
   },
   "include": [
       "src/**/*"

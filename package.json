@@ -37,9 +37,9 @@
     "lit-html": "^1.1.1"
   },
   "devDependencies": {
-    "i18next": "^17.0.6",
-    "dev-lib-colscott": "^1.1.7",
-    "express": "^4.17.1"
+    "dev-lib-colscott": "^2.0.0",
+    "express": "^4.17.1",
+    "i18next": "^17.0.6"
   },
   "peerDependencies": {
     "i18next": "^17.0.6"

@@ -9,13 +9,13 @@ import {
     NodePart,
     BooleanAttributePart,
     EventPart,
-} from '/node_modules/lit-html/lit-html.js';
+} from 'lit-html/lit-html.js';
 
 export { html, svg, render };
 
 /**
  * Used to keep track of Parts that need to be updated should the language change.
- * @type {Map<import('/node_modules/lit-html/lib/part').Part, { keys: string|string[]; options: {}; }>}
+ * @type {Map<import('lit-html/lib/part').Part, { keys: string|string[]; options: {}; }>}
  */
 export const registry = new Map();
 
@@ -36,6 +36,7 @@ setInterval(registryCleanup, 10000);
 
 let initialized = false;
 
+/** Iterates all registered translate directives re-evaluating the translations */
 const updateAll = () => {
     registry.forEach((details, part) => {
         if (isConnected(part)) {
@@ -52,13 +53,14 @@ const updateAll = () => {
  * @returns {string}
  */
 function translateAndInit(keys, opts) {
-    /** @type {import('/node_modules/i18next/index').default} */
+    /** @type {import('i18next/index').default} */
     // @ts-ignore
     const i18n = i18next;
 
     if (initialized === false) {
         /** Handle language changes */
         i18n.on('languageChanged', updateAll);
+        // @ts-ignore
         i18n.store.on('added', updateAll);
         initialized = true;
     }
@@ -67,7 +69,7 @@ function translateAndInit(keys, opts) {
 }
 
 /**
- * @param {import('/node_modules/lit-html/lib/part').Part} part
+ * @param {import('lit-html/lib/part').Part} part
  * @returns {boolean}
  */
 const isConnected = part => {
@@ -79,7 +81,7 @@ const isConnected = part => {
 };
 
 /**
- * @param {import('/node_modules/lit-html/lib/part').Part}  part
+ * @param {import('lit-html/lib/part').Part}  part
  * @param {string | string[]} keys - translation key
  * @param {?any} options - i18next translation options
  */
@@ -104,7 +106,7 @@ const setPartValue = (part, keys, options) => {
 /**
  * The translate directive
  * @example
- * import { translate as t, i18next, html, render } from '/node_modules/lit-i18n/src/lit-i18n.js';
+ * import { translate as t, i18next, html, render } from 'lit-i18n/src/lit-i18n.js';
  * i18next.init({...i18next config...});
  * class MyElement extends HTMLElement {
  *     connectedCallback() {
@@ -128,7 +130,7 @@ export const translate = directive(
      * @param {?any} options
      */
     (keys, options) =>
-        /** @param {import('/node_modules/lit-html/lib/part').Part}  part */
+        /** @param {import('lit-html/lib/part').Part}  part */
         part => {
             setPartValue(part, keys, options);
         },
