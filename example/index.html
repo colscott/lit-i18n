@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="module">
-            import {i18next} from '../../src/lit-i18n.js';
+        <script defer src="/node_modules/es-module-shims/dist/es-module-shims.js"></script>
+        <script type="importmap-shim" src="/import-map.json"></script>
+        <script type="module-shim">
+            import 'i18next/dist/umd/i18next.js';
 
             console.log(i18next.init({
                 lng: 'en',
@@ -13,7 +15,7 @@
                             "introduceself": "My name is {{name}}",
                             "divtitle": "Element title attribute",
                             "whatishow": "{{what}} is {{how}}",
-                            "datamodel": "{person.name} is a {person.age} year old and is male: {person.male}",
+                            "datamodel": "{{person.name}} is a {{person.age}} year old and is male: {{person.male}}",
                             "entername": "Enter Name"
                         }
                     },
@@ -30,7 +32,7 @@
                 }
             }));
         </script>
-        <script type="module">
+        <script type="module-shim">
             import { html, render } from '../node_modules/lit-html/lit-html.js';
             import { translate as t } from '../src/lit-i18n.js';
             customElements.define('i18n-example', class I18nExample extends HTMLElement {
@@ -56,14 +58,17 @@
 
                 get renderTemplate() {
                     return html`
+                        <h1>Translation using Lit-Html directive</h1>
+                        <h2>Tranlating in text nodes</h2>
                         <span>${t('introduceself', {name: this.name})}</span>
+                        <h2>Translating in attributes (hover over the numbers to see the title attribute).</h2>
                         <div title="${t('divtitle')}">1</div>
-                        <div title="Title of this DIV already translated">2</div>
-                        <div title="${t('whatishow', { what: 'i18next', how: 'great' })}">3</div>
+                        <div title="${t('whatishow', { what: 'i18next', how: 'great' })}">2</div>
+                        <h2>Translating in text nodes using data models</h2>
                         <span>${t('datamodel', {person: { name: "Colin", age: 21, male: true }})}</span>
+                        <h2>Translating input placeholders</h2>
                         <input type="text" placeholder="${t('entername')}">
                         <input type="text" placeholder="${t('noneExistentKey')}">
-                        <input type="text" placeholder="translated Enter Your Name">
                     `;
                 }
 
@@ -79,6 +84,5 @@
             <option value="fr">French</option>
         </select>
         <i18n-example></i18n-example>
-        <i18n-example-2></i18n-example-2>
     </body>
 </html>

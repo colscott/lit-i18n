@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "dev-lib-colscott": "^2.0.0",
+    "es-module-shims": "^0.4.6",
     "express": "^4.17.1",
     "i18next": "^17.0.6"
   },
