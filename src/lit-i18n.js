@@ -83,7 +83,7 @@ const isConnected = part => {
 /**
  * @param {import('lit-html/lib/part').Part}  part
  * @param {string | string[]} keys - translation key
- * @param {?any} options - i18next translation options
+ * @param {?any} [options] - i18next translation options
  */
 const setPartValue = (part, keys, options) => {
     let opts = options;
@@ -127,7 +127,7 @@ const setPartValue = (part, keys, options) => {
 export const translate = directive(
     /**
      * @param {string | string[]} keys
-     * @param {?any} options
+     * @param {?any} [options]
      */
     (keys, options) =>
         /** @param {import('lit-html/lib/part').Part}  part */
