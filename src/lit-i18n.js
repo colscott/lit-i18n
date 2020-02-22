@@ -43,7 +43,7 @@ const updateAll = () => {
             setPartValue(part, details.keys, details.options);
         }
     });
-}
+};
 
 /**
  * Lazily sets up i18next. Incase this library is loaded before i18next has been loaded.
@@ -95,7 +95,7 @@ const setPartValue = (part, keys, options) => {
 
     const translation = translateAndInit(keys, opts);
 
-    if (part.value === translation) {
+    if (translation === undefined || part.value === translation) {
         return;
     }
 
@@ -133,5 +133,29 @@ export const translate = directive(
         /** @param {import('lit-html/lib/part').Part}  part */
         part => {
             setPartValue(part, keys, options);
+        },
+);
+
+/**
+ * Can be used like translate but it also takes a Promise. This can be used if you can't guarantee if the i18next resource bundle is loaded.
+ * @example
+ * import { translateWhen } from 'lit-i18n/src/lit-i18n.js';
+ * const initializeI18next = i18next.use(someBackend).init(....);
+ * const translateDirective = (keys, options) => translateWhen(initializeI18next, keys, options);
+ * // Now you can use translateDirective in your lit-html templates.
+ * html`<div>${translateDirective('some.key')}</div>`
+ */
+export const translateWhen = directive(
+    /**
+     * @param {Promise} promise
+     * @param {string | string[]} keys
+     * @param {?any} [options]
+     */
+    (promise, keys, options) =>
+        /** @param {import('lit-html/lib/part').Part}  part */
+        part => {
+            Promise.resolve(promise).then(() => {
+                setPartValue(part, keys, options);
+            });
         },
 );

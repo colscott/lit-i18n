@@ -27,10 +27,14 @@
                             whatishow: '{{what}} est {{how}}',
                             datamodel: '{{person.name}} a {{person.age}} ans et est un homme: {{person.male}}',
                             entername: 'Entrez le nom',
-                        },
+                        }
                     },
                 }
             }));
+            setTimeout(() => {
+                i18next.addResources('en', 'testns', {"name": "name is"});
+                i18next.addResources('fr', 'testns', {"name": "nom est"});
+            }, 2000);
         </script>
         <script type="module-shim">
             import { html, render } from '../node_modules/lit-html/lit-html.js';
@@ -69,6 +73,8 @@
                         <h2>Translating input placeholders</h2>
                         <input type="text" placeholder="${t('entername')}">
                         <input type="text" placeholder="${t('noneExistentKey')}">
+                        <h3>Using a namespace that is loaded after 2 seconds</h3>
+                        <div>${t('testns:name')}</div>
                     `;
                 }
 
