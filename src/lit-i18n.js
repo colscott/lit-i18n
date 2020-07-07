@@ -95,7 +95,7 @@ const setPartValue = (part, keys, options) => {
 
     const translation = translateAndInit(keys, opts);
 
-    if (translation === undefined || part.value === translation) {
+    if (isConnected(part) === false || translation === undefined || part.value === translation) {
         return;
     }
 
