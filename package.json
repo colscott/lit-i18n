@@ -1,6 +1,6 @@
 {
   "name": "lit-i18n",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "lit-element based i18n solution backed by i18next",
   "main": "index.js",
   "files": [
@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "dev-lib-colscott": "^2.0.0",
+    "es-module-shims": "^0.4.6",
     "express": "^4.17.1",
     "i18next": "^17.0.6"
   },

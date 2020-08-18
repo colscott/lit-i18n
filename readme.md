@@ -28,8 +28,10 @@ Nothing new here. Just use the usual i18next [config](https://www.i18next.com/ov
     });
 
 ### Translations
-lit-i18n exposes a directive called translate. The translate directive has the same signature and functionality as the i18next [t method](https://www.i18next.com/overview/api#t). It also exposes lit-htmls html and render methods.
-    
+lit-i18n exposes two directives called translate and translateWhen.
+The translate directive has the same signature and functionality as the i18next [t method](https://www.i18next.com/overview/api#t). lit-i18n also exposes lit-htmls html and render methods.
+
+#### translate    
     import { translate as t, html, render } from 'lit-i18n/src/lit-i18n.js';
 
     /** @typedef {{name: string; age: number; male: boolean}} Person */
@@ -69,3 +71,17 @@ lit-i18n exposes a directive called translate. The translate directive has the s
             `;
         }
     }
+
+#### translateWhen directive - postponing translations until they have loaded
+Screen flicker can occur if you load multiple namespaces and run translations prior to the tranlation resource being loaded. I18next returns promises that will resolve after the resources are ready.
+If this happens you can use translateWhen.
+translateWhen differs to translate in that it also accepts a Promise. This Promise would typically be the Promise returned by i18next.init or i18next.loadNamespaces or i18next.loadLanguages. The translateWhen directive will not try to translate the key until the Promise is resolved.
+Passing the Promise every single time you call the directive can get a little much so you can wrap the directive and call the wrapper instead, like this:
+
+    import { translateWhen } from 'lit-i18n/src/lit-i18n.js';
+
+    const initializePromise = i18next.use(someBackend).init(....);
+    const translateDirective = (keys, options) => translateWhen(initializePromise, keys, options);
+
+    // Now you can use translateDirective in your lit-html templates.
+    html`<div>${translateDirective('some.key')}</div>`

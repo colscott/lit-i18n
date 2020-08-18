@@ -1,9 +1,9 @@
-var express = require('express');
+const express = require('express');
 
-var app = express();
+const app = express();
 
 app.use('/', express.static('./'));
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3001);
 
-console.log(`server started on: http://localhost:${process.env.PORT || 3000}/a-wc-router/examples/`);
+console.info(`server started on: http://localhost:${process.env.PORT || 3000}`);
