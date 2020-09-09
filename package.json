@@ -11,7 +11,9 @@
     "test": "npm run test:unit",
     "test:ci": "npm run test:ci:unit",
     "test:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js --no-single-run",
-    "test:ci:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js --single-run"
+    "test:ci:unit": "node ./node_modules/karma/bin/karma start karma-unit.conf.js --single-run",
+    "prepublishOnly": "npm run generateDeclarations",
+    "generateDeclarations": "node ./node_modules/typescript/bin/tsc -p d.tsconfig.json"
   },
   "repository": {
     "type": "git",
@@ -40,7 +42,8 @@
     "dev-lib-colscott": "^2.0.0",
     "es-module-shims": "^0.4.6",
     "express": "^4.17.1",
-    "i18next": "^17.0.6"
+    "i18next": "^17.0.6",
+    "typescript": "^4.0.2"
   },
   "peerDependencies": {
     "i18next": "^17.0.6"
