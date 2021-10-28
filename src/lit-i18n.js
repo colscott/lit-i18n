@@ -63,7 +63,7 @@ function translateAndInit(keys, opts) {
 }
 
 /**
- * @param {Translate} translateDirective
+ * @param {TranslateBase} translateDirective
  * @returns {boolean}
  */
 const isConnected = translateDirective => {
