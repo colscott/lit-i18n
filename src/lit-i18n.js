@@ -1,21 +1,14 @@
 /* global i18next */
 // @ts-check
-import {
-    directive,
-    html,
-    render,
-    svg,
-    AttributePart,
-    NodePart,
-    BooleanAttributePart,
-    EventPart,
-} from 'lit-html/lit-html.js';
+import { html, render, svg, noChange } from 'lit-html';
+import { directive, AsyncDirective } from 'lit-html/async-directive.js';
+import { PartType } from 'lit-html/directive.js';
 
 export { html, svg, render };
 
 /**
  * Used to keep track of Parts that need to be updated should the language change.
- * @type {Map<import('lit-html/lib/part').Part, { keys: string|string[]; options: {}; }>}
+ * @type {Map<Translate, { keys: string|string[]; options: {}; }>}
  */
 export const registry = new Map();
 
@@ -25,13 +18,13 @@ export const registry = new Map();
  */
 export const registryCleanup = () => {
     registry.forEach((details, part) => {
-        if (isConnected(part) === false) {
+        if (part.isConnected === false || isConnected(part) === false) {
             registry.delete(part);
         }
     });
 };
 
-/** Since lit-html does not have a life cycle hook for part disconnected, we need to record and manage parts ourselves. */
+/** lit-html does not seem to fire life cycle hook for part disconnected, we need to record and manage parts ourselves. */
 setInterval(registryCleanup, 10000);
 
 let initialized = false;
@@ -39,8 +32,9 @@ let initialized = false;
 /** Iterates all registered translate directives re-evaluating the translations */
 const updateAll = () => {
     registry.forEach((details, part) => {
-        if (isConnected(part)) {
-            setPartValue(part, details.keys, details.options);
+        if (part.isConnected && isConnected(part)) {
+            const translation = translateAndInit(details.keys, details.options);
+            part.setValue(translation);
         }
     });
 };
@@ -69,39 +63,72 @@ function translateAndInit(keys, opts) {
 }
 
 /**
- * @param {import('lit-html/lib/part').Part} part
+ * @param {Translate} translateDirective
  * @returns {boolean}
  */
-const isConnected = part => {
-    if (part instanceof NodePart) return part.startNode.isConnected && part.endNode.isConnected;
-    if (part instanceof AttributePart) return part.committer.element.isConnected;
-    if (part instanceof BooleanAttributePart || part instanceof EventPart || part instanceof EventPart)
-        return part.element.isConnected;
+const isConnected = translateDirective => {
+    const { part } = translateDirective;
+    if (part.type === PartType.CHILD) return part.parentNode.isConnected;
+    if (part.type === PartType.ATTRIBUTE) return part.element.isConnected;
+    if (part.type === PartType.BOOLEAN_ATTRIBUTE) return part.element.isConnected;
+    if (part.type === PartType.EVENT) return part.element.isConnected;
+    if (part.type === PartType.ELEMENT) return part.element.isConnected;
     throw new Error('Unsupport Part');
 };
 
-/**
- * @param {import('lit-html/lib/part').Part}  part
- * @param {string | string[]} keys - translation key
- * @param {?any} [options] - i18next translation options
- */
-const setPartValue = (part, keys, options) => {
-    let opts = options;
-    registry.set(part, { keys, options: opts });
+/** */
+class Translate extends AsyncDirective {
+    /** @param {import('lit-html/directive.js').Part} part */
+    constructor(part) {
+        super(part);
 
-    if (typeof options === 'function') {
-        opts = options();
+        this.value = '';
+        this.part = part;
     }
 
-    const translation = translateAndInit(keys, opts);
+    /**
+     * @param {string | string[]} keys - translation key
+     * @param {?any} [options] - i18next translation options
+     * @returns {string|Symbol} translated string
+     */
+    render(keys, options) {
+        let opts = options;
+        registry.set(this, { keys, options: opts });
 
-    if (isConnected(part) === false || translation === undefined || part.value === translation) {
-        return;
+        if (typeof options === 'function') {
+            opts = options();
+        }
+
+        const translation = translateAndInit(keys, opts);
+
+        if (this.isConnected === false || translation === undefined || this.value === translation) {
+            return noChange;
+        }
+
+        return translation;
     }
 
-    part.setValue(translation);
-    part.commit();
-};
+    /** clean up the registry */
+    disconnected() {
+        registry.delete(this);
+    }
+}
+
+/** */
+class TranslateWhen extends Translate {
+    /**
+     * @param {Promise} promise to wait for
+     * @param {string | string[]} keys - translation key
+     * @param {?any} [options] - i18next translation options
+     * @returns {string|Symbol} translated string
+     */
+    render(promise, keys, options) {
+        promise.then(() => {
+            this.setValue(super.render(keys, options));
+        });
+        return noChange;
+    }
+}
 
 /**
  * The translate directive
@@ -124,17 +151,7 @@ const setPartValue = (part, keys, options) => {
  *     }
  * }
  */
-export const translate = directive(
-    /**
-     * @param {string | string[]} keys
-     * @param {?any} [options]
-     */
-    (keys, options) =>
-        /** @param {import('lit-html/lib/part').Part}  part */
-        part => {
-            setPartValue(part, keys, options);
-        },
-);
+export const translate = directive(Translate);
 
 /**
  * Can be used like translate but it also takes a Promise. This can be used if you can't guarantee if the i18next resource bundle is loaded.
@@ -145,17 +162,4 @@ export const translate = directive(
  * // Now you can use translateDirective in your lit-html templates.
  * html`<div>${translateDirective('some.key')}</div>`
  */
-export const translateWhen = directive(
-    /**
-     * @param {Promise} promise
-     * @param {string | string[]} keys
-     * @param {?any} [options]
-     */
-    (promise, keys, options) =>
-        /** @param {import('lit-html/lib/part').Part}  part */
-        part => {
-            Promise.resolve(promise).then(() => {
-                setPartValue(part, keys, options);
-            });
-        },
-);
+export const translateWhen = directive(TranslateWhen);

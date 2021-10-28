@@ -1,6 +1,8 @@
-/* global i18next, describe, beforeAll, afterAll, jasmine, it, expect */
+/* global i18next, describe, before, after, it */
 /* Jasmine will be loaded by the test framework. No need to import it. */
-import '../../node_modules/i18next/i18next.js';
+import { expect } from '@esm-bundle/chai';
+import 'i18next/i18next.js';
+import 'lit-html';
 import { translate as t, html, render, registry, registryCleanup } from '../../src/lit-i18n.js';
 
 /** i18next config */
@@ -103,7 +105,6 @@ class I18nFull extends HTMLElement {
 }
 customElements.define('i18n-full', I18nFull);
 
-let originalTimeout = 0;
 /** @type {Array<Element>} */
 let elements = [];
 
@@ -122,77 +123,76 @@ const addElement = tag => {
     return elements[elements.push(document.body.appendChild(document.createElement(tag || 'i18n-test'))) - 1];
 };
 
+mocha.setup({
+    timeout: 15000,
+});
+
 /** Tests */
 describe('Translations', () => {
     it('Should perform translation', () => {
         const elem = addElement('i18n-full');
         if (elem instanceof I18nFull) {
             const personElem = elem.querySelector('.person');
-            expect(personElem.innerText).toEqual('None is a 0 year old and is male: false');
+            expect(personElem.innerText).to.equal('None is a 0 year old and is male: false');
             elem.person = {
                 name: 'Fred',
                 age: 46,
                 male: true,
             };
-            expect(personElem.innerText).toEqual('Fred is a 46 year old and is male: true');
+            expect(personElem.innerText).to.equal('Fred is a 46 year old and is male: true');
         }
     });
 
     it('Should translate attributes', () => {
         const titleElem = addElement('i18n-full').querySelector('.title');
-        expect(titleElem.title).toEqual('Element title attribute');
+        expect(titleElem.title).to.equal('Element title attribute');
         const intElem = addElement('i18n-full').querySelector('.title-interpolation');
-        expect(intElem.title).toEqual('i18next is great');
+        expect(intElem.title).to.equal('i18next is great');
         const input = addElement('i18n-full').querySelector('.placeholder');
-        expect(input.placeholder).toEqual('Enter Name');
+        expect(input.placeholder).to.equal('Enter Name');
     });
 });
 
 describe('Events', () => {
-    afterAll(done => {
-        i18next.changeLanguage('en').then(done);
+    after(async () => {
+        await i18next.changeLanguage('en');
     });
-    it('Should react to language changes', done => {
+    it('Should react to language changes', async () => {
         const elem = addElement('i18n-full');
         const titleElem = elem.querySelector('.title');
-        expect(titleElem.title).toEqual('Element title attribute');
+        expect(titleElem.title).to.equal('Element title attribute');
         const intElem = elem.querySelector('.title-interpolation');
-        expect(intElem.title).toEqual('i18next is great');
+        expect(intElem.title).to.equal('i18next is great');
         const input = elem.querySelector('.placeholder');
-        expect(input.placeholder).toEqual('Enter Name');
+        expect(input.placeholder).to.equal('Enter Name');
         const personElem = elem.querySelector('.person');
         elem.person = {
             name: 'Fred',
             age: 46,
             male: true,
         };
-        expect(personElem.innerText).toEqual('Fred is a 46 year old and is male: true');
+        expect(personElem.innerText).to.equal('Fred is a 46 year old and is male: true');
 
-        i18next.changeLanguage('fr').then(() => {
-            expect(titleElem.title).toEqual("Attribut de titre d'élément");
-            expect(intElem.title).toEqual('i18next est great');
-            expect(input.placeholder).toEqual('Entrez le nom');
-            expect(personElem.innerText).toEqual('Fred a 46 ans et est un homme: true');
-            done();
-        });
+        await i18next.changeLanguage('fr');
+        expect(titleElem.title).to.equal("Attribut de titre d'élément");
+        expect(intElem.title).to.equal('i18next est great');
+        expect(input.placeholder).to.equal('Entrez le nom');
+        expect(personElem.innerText).to.equal('Fred a 46 ans et est un homme: true');
     });
 });
 
 describe('Garbage collection', () => {
-    beforeAll(() => {
-        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+    before(() => {
         tidyElements();
         registryCleanup();
     });
 
-    afterAll(() => {
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    after(() => {
         tidyElements();
     });
 
     it('Parts references should be released for garbage collect', done => {
-        expect(registry.size).toBe(0);
+        expect(registry.size).to.equal(0);
         for (let i = 0, iLen = 1000; i < iLen; i++) {
             const elem = addElement();
             if (i > 100) {
@@ -200,10 +200,10 @@ describe('Garbage collection', () => {
             }
         }
 
-        expect(registry.size).toBe(1000);
+        expect(registry.size).to.equal(1000);
         setTimeout(() => {
-            expect(registry.size).toBe(101);
+            expect(registry.size).to.equal(101);
             done();
-        }, 10000);
+        }, 11000);
     });
 });
