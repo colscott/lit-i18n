@@ -8,7 +8,7 @@ export { html, svg, render };
 
 /**
  * Used to keep track of Parts that need to be updated should the language change.
- * @type {Map<Translate, { keys: string|string[]; options: {}; }>}
+ * @type {Map<TranslateBase, { keys: string|string[]; options: {}; }>}
  */
 export const registry = new Map();
 
@@ -77,7 +77,10 @@ const isConnected = translateDirective => {
 };
 
 /** */
-class Translate extends AsyncDirective {
+class TranslateBase extends AsyncDirective {
+    /** @abstract */
+    render() {}
+
     /** @param {import('lit-html/directive.js').Part} part */
     constructor(part) {
         super(part);
@@ -91,7 +94,7 @@ class Translate extends AsyncDirective {
      * @param {?any} [options] - i18next translation options
      * @returns {string|Symbol} translated string
      */
-    render(keys, options) {
+    translate(keys, options) {
         let opts = options;
         registry.set(this, { keys, options: opts });
 
@@ -115,16 +118,28 @@ class Translate extends AsyncDirective {
 }
 
 /** */
-class TranslateWhen extends Translate {
+class Translate extends TranslateBase {
     /**
-     * @param {Promise} promise to wait for
-     * @param {string | string[]} keys - translation key
+     * @param {string | string[]} [keys] - translation key
+     * @param {?any} [options] - i18next translation options
+     * @returns {string|Symbol} translated string
+     */
+    render(keys, options) {
+        return this.translate(keys, options);
+    }
+}
+
+/** */
+class TranslateWhen extends TranslateBase {
+    /**
+     * @param {Promise} [promise] to wait for
+     * @param {string | string[]} [keys] - translation key
      * @param {?any} [options] - i18next translation options
      * @returns {string|Symbol} translated string
      */
     render(promise, keys, options) {
         promise.then(() => {
-            this.setValue(super.render(keys, options));
+            this.setValue(this.translate(keys, options));
         });
         return noChange;
     }
