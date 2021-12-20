@@ -7,7 +7,7 @@ i18next lit-html directive (could possible add other i18n backends).
     npm install lit-i18n
 ## Usage
 ### Config
-Nothing new here. Just use the usual i18next [config](https://www.i18next.com/overview/configuration-options). You can import from i18next. Alternatively, lit-i18n exports i18next.
+Nothing new here. Just use the usual i18next [config](https://www.i18next.com/overview/configuration-options). You can import from i18next.
 
     i18next.init({
         lng: 'en',
