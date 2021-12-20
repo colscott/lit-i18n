@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script defer src="/node_modules/es-module-shims/dist/es-module-shims.js"></script>
-        <script type="importmap-shim" src="/import-map.json"></script>
-        <script type="module-shim">
+        <script type="module">
             import 'i18next/dist/umd/i18next.js';
 
             console.log(i18next.init({
@@ -32,13 +30,13 @@
                 }
             }));
             setTimeout(() => {
-                i18next.addResources('en', 'testns', {"name": "name is"});
-                i18next.addResources('fr', 'testns', {"name": "nom est"});
+                i18next.addResources('en', 'testns', {"name": "name is {{name}}"});
+                i18next.addResources('fr', 'testns', {"name": "nom est {{name}}"});
             }, 2000);
         </script>
-        <script type="module-shim">
+        <script type="module">
             import { html, render } from '../node_modules/lit-html/lit-html.js';
-            import { translate as t } from '../src/lit-i18n.js';
+            import { translate as t, translateWhen } from '../src/lit-i18n.js';
             customElements.define('i18n-example', class I18nExample extends HTMLElement {
                 static get observedAttributes() { return ['name']; }
                 
@@ -74,7 +72,11 @@
                         <input type="text" placeholder="${t('entername')}">
                         <input type="text" placeholder="${t('noneExistentKey')}">
                         <h3>Using a namespace that is loaded after 2 seconds</h3>
-                        <div>${t('testns:name')}</div>
+                        <div>${t('testns:name', { name: "Colin"})}</div>
+                        <h3>Using a translateWhen to translate after a promise resolves (1 second)</h3>
+                        <div>${translateWhen(new Promise(function(resolve) { 
+                                setTimeout(resolve, 1000)
+                            }), 'introduceself', {name: this.name})}</div>
                     `;
                 }
 
