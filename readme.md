@@ -8,7 +8,7 @@ i18next lit-html directive (could possible add other i18n backends).
 ## Usage
 Note: this library uses lit-html 2. If you use lit-html 1.x.x then please use lit-i18n 2.x.x.
 ### Config
-Nothing new here. Just use the usual i18next [config](https://www.i18next.com/overview/configuration-options). You can import from i18next. Alternatively, lit-i18n exports i18next.
+Nothing new here. Just use the usual i18next [config](https://www.i18next.com/overview/configuration-options). You can import from i18next.
 
     i18next.init({
         lng: 'en',
