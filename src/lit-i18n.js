@@ -69,7 +69,7 @@ function translateAndInit(keys, opts) {
 const isConnected = translateDirective => {
     const { part } = translateDirective;
     if (part.type === PartType.ATTRIBUTE) return part.element.isConnected;
-    if (part.type === PartType.CHILD) return part.parentNode.isConnected;
+    if (part.type === PartType.CHILD) return part.parentNode ? part.parentNode.isConnected : false;
     if (part.type === PartType.PROPERTY) return part.element.isConnected;
     if (part.type === PartType.BOOLEAN_ATTRIBUTE) return part.element.isConnected;
     if (part.type === PartType.EVENT) return part.element.isConnected;
