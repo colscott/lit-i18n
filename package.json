@@ -1,6 +1,6 @@
 {
   "name": "lit-i18n",
-  "version": "3.0.3",
+  "version": "4.0.0",
   "description": "lit-element based i18n solution backed by i18next",
   "main": "index.js",
   "files": [
@@ -39,8 +39,7 @@
     "url": "https://github.com/colscott/lit-i18n/issues"
   },
   "homepage": "https://github.com/colscott/lit-i18n#readme",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
     "@web/dev-server": "^0.1.25",
