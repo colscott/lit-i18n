@@ -1,9 +1,36 @@
-/* global i18next */
 // @ts-check
 import { noChange } from 'lit-html';
 import { directive, AsyncDirective } from 'lit-html/async-directive.js';
 import { PartType } from 'lit-html/directive.js';
 
+/** @type {import('i18next').i18n} */
+let i18n = null;
+
+/** @type {import('i18next').ThirdPartyModule} */
+export const initLitI18n = {
+    type: '3rdParty',
+
+    /**
+     * initialize the i18next instance to use
+     * @param {import('i18next').i18n} i18nextInstance to use
+     */
+    init(i18nextInstance) {
+        setI18n(i18nextInstance);
+    },
+};
+
+/**
+ * Sets the i18next instance to use for the translations.
+ * Favor using the plugin
+ * @example
+ * ```js
+ * i18next.use(initLitI18n)
+ * ```
+ * @param {import('i18next').i18n} i18nextInstance
+ */
+export const setI18n = (i18nextInstance) => {
+    i18n = i18nextInstance;
+};
 
 /**
  * Used to keep track of Parts that need to be updated should the language change.
@@ -46,9 +73,9 @@ const updateAll = () => {
  * @returns {string}
  */
 function translateAndInit(keys, opts) {
-    /** @type {import('i18next/index').default} */
-    // @ts-ignore
-    const i18n = i18next;
+    if (!i18n) {
+        return '';
+    }
 
     if (initialized === false) {
         /** Handle language changes */
@@ -58,14 +85,20 @@ function translateAndInit(keys, opts) {
         initialized = true;
     }
 
-    return i18n.t(keys, opts);
+    const translation = i18n.t(keys, opts);
+
+    if (typeof translation === 'string') {
+        return translation;
+    }
+    // returnObjects not supported https://www.i18next.com/translation-function/objects-and-arrays#objects
+    return '';
 }
 
 /**
  * @param {TranslateBase} translateDirective
  * @returns {boolean}
  */
-const isConnected = translateDirective => {
+const isConnected = (translateDirective) => {
     const { part } = translateDirective;
     if (part.type === PartType.ATTRIBUTE) return part.element.isConnected;
     if (part.type === PartType.CHILD) return part.parentNode ? part.parentNode.isConnected : false;
@@ -86,6 +119,7 @@ class TranslateBase extends AsyncDirective {
         super(part);
 
         this.value = '';
+        /** @type {import('lit-html/directive.js').Part} */
         this.part = part;
     }
 
@@ -148,6 +182,7 @@ class TranslateWhen extends TranslateBase {
 /**
  * The translate directive
  * @example
+ * ```js
  * import { translate as t, i18next, html, render } from 'lit-i18n/src/lit-i18n.js';
  * i18next.init({...i18next config...});
  * class MyElement extends HTMLElement {
@@ -165,16 +200,19 @@ class TranslateWhen extends TranslateBase {
  *         `;
  *     }
  * }
+ * ```
  */
 export const translate = directive(Translate);
 
 /**
  * Can be used like translate but it also takes a Promise. This can be used if you can't guarantee if the i18next resource bundle is loaded.
  * @example
+ * ```js
  * import { translateWhen } from 'lit-i18n/src/lit-i18n.js';
  * const initializeI18next = i18next.use(someBackend).init(....);
  * const translateDirective = (keys, options) => translateWhen(initializeI18next, keys, options);
  * // Now you can use translateDirective in your lit-html templates.
  * html`<div>${translateDirective('some.key')}</div>`
+ * ```
  */
 export const translateWhen = directive(TranslateWhen);

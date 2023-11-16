@@ -1,12 +1,12 @@
-/* global i18next, describe, before, after, it */
+/* global describe, before, after, it */
 /* Jasmine will be loaded by the test framework. No need to import it. */
 import { expect } from '@esm-bundle/chai';
-import 'i18next/i18next.js';
-import 'lit-html';
-import { translate as t, html, render, registry, registryCleanup } from '../../src/lit-i18n.js';
+import i18next from 'i18next';
+import { html, render } from 'lit-html';
+import { translate as t, registry, registryCleanup, initLitI18n } from '../../src/lit-i18n.js';
 
 /** i18next config */
-i18next.init({
+i18next.use(initLitI18n).init({
     lng: 'en',
     debug: true,
     resources: {
@@ -110,7 +110,7 @@ let elements = [];
 
 /** Removes any added elements */
 const tidyElements = () => {
-    elements.forEach(e => e.parentElement && e.remove());
+    elements.forEach((e) => e.parentElement && e.remove());
     elements = [];
 };
 
@@ -119,7 +119,7 @@ const tidyElements = () => {
  * @param {string} tag
  * @returns {Element}
  */
-const addElement = tag => {
+const addElement = (tag) => {
     return elements[elements.push(document.body.appendChild(document.createElement(tag || 'i18n-test'))) - 1];
 };
 
@@ -191,7 +191,7 @@ describe('Garbage collection', () => {
         tidyElements();
     });
 
-    it('Parts references should be released for garbage collect', done => {
+    it('Parts references should be released for garbage collect', (done) => {
         expect(registry.size).to.equal(0);
         for (let i = 0, iLen = 1000; i < iLen; i++) {
             const elem = addElement();

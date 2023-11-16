@@ -2,9 +2,12 @@
 <html>
     <head>
         <script type="module">
-            import 'i18next/dist/umd/i18next.js';
+            import i18next from 'i18next';
+            import { initLitI18n } from '../src/lit-i18n.js';
 
-            console.log(i18next.init({
+            window['i18next'] = i18next;
+
+            console.log(i18next.use(initLitI18n).init({
                 lng: 'en',
                 debug: true,
                 resources: {
