@@ -1,10 +1,9 @@
 /* global i18next */
 // @ts-check
-import { html, render, svg, noChange } from 'lit-html';
+import { noChange } from 'lit-html';
 import { directive, AsyncDirective } from 'lit-html/async-directive.js';
 import { PartType } from 'lit-html/directive.js';
 
-export { html, svg, render };
 
 /**
  * Used to keep track of Parts that need to be updated should the language change.

@@ -16,7 +16,8 @@
     "test:watch": "npm run test:unit -- --watch",
     "test:unit": "web-test-runner \"test/unit/**/*.js\" --node-resolve --preserve-symlinks",
     "prepublishOnly": "npm run generateDeclarations",
-    "generateDeclarations": "node ./node_modules/typescript/bin/tsc -p d.tsconfig.json"
+    "generateDeclarations": "node ./node_modules/typescript/bin/tsc -p d.tsconfig.json",
+    "removeDeclarations": "rimraf ./src/**/*.d.ts"
   },
   "repository": {
     "type": "git",
@@ -39,17 +40,16 @@
   },
   "homepage": "https://github.com/colscott/lit-i18n#readme",
   "dependencies": {
-    "lit-html": "^2.0.1"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
     "@web/dev-server": "^0.1.25",
     "@web/test-runner": "^0.13.20",
     "dev-lib-colscott": "^2.0.0",
-    "i18next": "^21.3.3",
     "typescript": "^4.0.2"
   },
   "peerDependencies": {
-    "i18next": "^21.3.3"
+    "i18next": ">=21.3.3",
+    "lit-html": ">=2.0.1"
   }
 }
