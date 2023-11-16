@@ -11,7 +11,7 @@ Nothing new here. Just use the usual i18next [config](https://www.i18next.com/ov
 
 ```js
 import i18next from 'i18next';
-import { initLitI18n } from '../../src/lit-i18n.js'; 
+import { initLitI18n } from 'lit-i18n'; 
 i18next
     .use(initLitI18n)
     .init({
@@ -39,7 +39,7 @@ The translate directive has the same signature and functionality as the i18next 
 
 #### translate
 ```js    
-import { translate as t } from 'lit-i18n/src/lit-i18n.js';
+import { translate as t } from 'lit-i18n';
 import { html, render } from 'lit-html';
 
 /** @typedef {{name: string; age: number; male: boolean}} Person */
@@ -83,7 +83,7 @@ If this happens you can use `translateWhen`.
 Passing the Promise every single time you call the directive can get a little much so you can wrap the directive and call the wrapper instead, like this:
 
 ```js
-import { translateWhen } from 'lit-i18n/src/lit-i18n.js';
+import { translateWhen } from 'lit-i18n';
 
 const initializePromise = i18next.use(someBackend).init(....);
 const translateDirective = (keys, options) => translateWhen(initializePromise, keys, options);

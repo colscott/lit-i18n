@@ -1,1 +1,1 @@
-export { html, render, svg } from './src/lit-i18n.js';
+export * from './src/lit-i18n.js';
