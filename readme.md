@@ -83,9 +83,9 @@ If this happens you can use `translateWhen`.
 Passing the Promise every single time you call the directive can get a little much so you can wrap the directive and call the wrapper instead, like this:
 
 ```js
-import { translateWhen } from 'lit-i18n';
+import { initLitI18n, translateWhen } from 'lit-i18n';
 
-const initializePromise = i18next.use(someBackend).init(....);
+const initializePromise = i18next.use(initLitI18n).init(....);
 const translateDirective = (keys, options) => translateWhen(initializePromise, keys, options);
 
 // Now you can use translateDirective in your lit-html templates.
