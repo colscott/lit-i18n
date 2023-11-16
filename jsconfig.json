@@ -6,7 +6,8 @@
     "moduleResolution": "node"
   },
   "include": [
-      "src/**/*"
+      "index.js",
+      "src/**/*.js"
   ],
   "typeAcquisition": {
       "include": [

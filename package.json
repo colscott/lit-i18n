@@ -18,7 +18,9 @@
     "test:unit": "web-test-runner \"test/unit/**/*.js\" --node-resolve --preserve-symlinks",
     "prepublishOnly": "npm run generateDeclarations",
     "generateDeclarations": "node ./node_modules/typescript/bin/tsc -p d.tsconfig.json",
-    "removeDeclarations": "rimraf ./src/**/*.d.ts"
+    "removeDeclarations": "rimraf ./src/**/*.d.ts",
+    "tsc:test": "node ./node_modules/typescript/bin/tsc -p ./test/tsc/tsconfig.json",
+    "tsc:test:watch": "node ./node_modules/typescript/bin/tsc -p ./test/tsc/tsconfig.json --watch"
   },
   "repository": {
     "type": "git",

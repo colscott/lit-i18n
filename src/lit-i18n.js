@@ -99,7 +99,8 @@ function translateAndInit(keys, opts) {
  * @returns {boolean}
  */
 const isConnected = (translateDirective) => {
-    const { part } = translateDirective;
+    // eslint-disable-next-line prefer-destructuring
+    const part = /** @type {import('lit-html/directive.js').Part} */ (translateDirective.part);
     if (part.type === PartType.ATTRIBUTE) return part.element.isConnected;
     if (part.type === PartType.CHILD) return part.parentNode ? part.parentNode.isConnected : false;
     if (part.type === PartType.PROPERTY) return part.element.isConnected;
@@ -114,12 +115,12 @@ class TranslateBase extends AsyncDirective {
     /** @abstract */
     render() {}
 
-    /** @param {import('lit-html/directive.js').Part} part */
+    /** @param {import('lit-html/directive.js').PartInfo} part */
     constructor(part) {
         super(part);
 
         this.value = '';
-        /** @type {import('lit-html/directive.js').Part} */
+        /** @type {import('lit-html/directive.js').PartInfo} */
         this.part = part;
     }
 

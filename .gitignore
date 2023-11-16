@@ -1,2 +1,4 @@
 dist
 node_modules
+index.d.ts
+src/lit-i18n.d.ts
