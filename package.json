@@ -42,12 +42,13 @@
     "url": "https://github.com/colscott/lit-i18n/issues"
   },
   "homepage": "https://github.com/colscott/lit-i18n#readme",
-  "dependencies": {},
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
     "@web/dev-server": "^0.1.25",
     "@web/test-runner": "^0.13.20",
     "dev-lib-colscott": "^2.0.0",
+    "i18next": ">=21.3.3",
+    "lit-html": ">=2.0.1",
     "typescript": "^5.2.2"
   },
   "peerDependencies": {
