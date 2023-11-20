@@ -6,7 +6,7 @@ import { html, render } from 'lit-html';
 import { translate as t, registry, registryCleanup, initLitI18n } from '../../src/lit-i18n.js';
 
 /** i18next config */
-i18next.use(initLitI18n).init({
+const i18nInitialized = i18next.use(initLitI18n).init({
     lng: 'en',
     debug: true,
     resources: {
@@ -110,7 +110,7 @@ let elements = [];
 
 /** Removes any added elements */
 const tidyElements = () => {
-    elements.forEach((e) => e.parentElement && e.remove());
+    elements.forEach(e => e.parentElement && e.remove());
     elements = [];
 };
 
@@ -119,7 +119,7 @@ const tidyElements = () => {
  * @param {string} tag
  * @returns {Element}
  */
-const addElement = (tag) => {
+const addElement = tag => {
     return elements[elements.push(document.body.appendChild(document.createElement(tag || 'i18n-test'))) - 1];
 };
 
@@ -127,83 +127,101 @@ mocha.setup({
     timeout: 15000,
 });
 
+function nextThread() {
+    return new Promise((res) => setTimeout(res));
+}
+
 /** Tests */
-describe('Translations', () => {
-    it('Should perform translation', () => {
-        const elem = addElement('i18n-full');
-        if (elem instanceof I18nFull) {
+
+i18nInitialized.then(() => {
+    describe('Translations', () => {
+        it('Should perform translation', async () => {
+            const elem = addElement('i18n-full');
+            if (elem instanceof I18nFull) {
+                const personElem = elem.querySelector('.person');
+                await nextThread();
+                expect(personElem.innerText).to.equal('None is a 0 year old and is male: false');
+                elem.person = {
+                    name: 'Fred',
+                    age: 46,
+                    male: true,
+                };
+                expect(personElem.innerText).to.equal('Fred is a 46 year old and is male: true');
+            }
+        });
+
+        it('Should translate attributes', async () => {
+            const titleElem = addElement('i18n-full').querySelector('.title');
+            await nextThread();
+            expect(titleElem.title).to.equal('Element title attribute');
+            const intElem = addElement('i18n-full').querySelector('.title-interpolation');
+            await nextThread();
+            expect(intElem.title).to.equal('i18next is great');
+            const input = addElement('i18n-full').querySelector('.placeholder');
+            await nextThread();
+            expect(input.placeholder).to.equal('Enter Name');
+        });
+    });
+
+    describe('Events', () => {
+        after(async () => {
+            await i18next.changeLanguage('en');
+        });
+        it('Should react to language changes', asyn () => {
+            const elem = addElement('i18n-full');
+            const titleElem = elem.querySelector('.title');
+            await nextThread();
+            expect(titleElem.title).to.equal('Element title attribute');
+            const intElem = elem.querySelector('.title-interpolation');
+            await nextThread();
+            expect(intElem.title).to.equal('i18next is great');
+            const input = elem.querySelector('.placeholder');
+            await nextThread();
+            expect(input.placeholder).to.equal('Enter Name');
             const personElem = elem.querySelector('.person');
-            expect(personElem.innerText).to.equal('None is a 0 year old and is male: false');
             elem.person = {
                 name: 'Fred',
                 age: 46,
                 male: true,
             };
+            await nextThread();
             expect(personElem.innerText).to.equal('Fred is a 46 year old and is male: true');
-        }
+
+            await i18next.changeLanguage('fr');
+            await nextThread();
+            expect(titleElem.title).to.equal("Attribut de titre d'élément");
+            expect(intElem.title).to.equal('i18next est great');
+            expect(input.placeholder).to.equal('Entrez le nom');
+            expect(personElem.innerText).to.equal('Fred a 46 ans et est un homme: true');
+        });
     });
 
-    it('Should translate attributes', () => {
-        const titleElem = addElement('i18n-full').querySelector('.title');
-        expect(titleElem.title).to.equal('Element title attribute');
-        const intElem = addElement('i18n-full').querySelector('.title-interpolation');
-        expect(intElem.title).to.equal('i18next is great');
-        const input = addElement('i18n-full').querySelector('.placeholder');
-        expect(input.placeholder).to.equal('Enter Name');
-    });
-});
+    describe('Garbage collection', () => {
+        before(() => {
+            tidyElements();
+            registryCleanup();
+        });
 
-describe('Events', () => {
-    after(async () => {
-        await i18next.changeLanguage('en');
-    });
-    it('Should react to language changes', async () => {
-        const elem = addElement('i18n-full');
-        const titleElem = elem.querySelector('.title');
-        expect(titleElem.title).to.equal('Element title attribute');
-        const intElem = elem.querySelector('.title-interpolation');
-        expect(intElem.title).to.equal('i18next is great');
-        const input = elem.querySelector('.placeholder');
-        expect(input.placeholder).to.equal('Enter Name');
-        const personElem = elem.querySelector('.person');
-        elem.person = {
-            name: 'Fred',
-            age: 46,
-            male: true,
-        };
-        expect(personElem.innerText).to.equal('Fred is a 46 year old and is male: true');
+        after(() => {
+            tidyElements();
+        });
 
-        await i18next.changeLanguage('fr');
-        expect(titleElem.title).to.equal("Attribut de titre d'élément");
-        expect(intElem.title).to.equal('i18next est great');
-        expect(input.placeholder).to.equal('Entrez le nom');
-        expect(personElem.innerText).to.equal('Fred a 46 ans et est un homme: true');
-    });
-});
-
-describe('Garbage collection', () => {
-    before(() => {
-        tidyElements();
-        registryCleanup();
-    });
-
-    after(() => {
-        tidyElements();
-    });
-
-    it('Parts references should be released for garbage collect', (done) => {
-        expect(registry.size).to.equal(0);
-        for (let i = 0, iLen = 1000; i < iLen; i++) {
-            const elem = addElement();
-            if (i > 100) {
-                elem.remove();
+        it('Parts references should be released for garbage collect', done => {
+            expect(registry.size).to.equal(0);
+            for (let i = 0, iLen = 1000; i < iLen; i++) {
+                const elem = addElement();
+                if (i > 100) {
+                    elem.remove();
+                }
             }
-        }
+            nextThread().then(() => {
 
-        expect(registry.size).to.equal(1000);
-        setTimeout(() => {
-            expect(registry.size).to.equal(101);
-            done();
-        }, 11000);
+                expect(registry.size).to.equal(1000);
+                setTimeout(() => {
+                    expect(registry.size).to.equal(101);
+                    done();
+                }, 11000);
+            });
+        });
     });
 });
