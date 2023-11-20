@@ -1,7 +1,7 @@
 import i18next from 'i18next';
-import { initLitI18n, translateWhen } from '../../index';
+import { initLitI18n, translate as t } from '../../index';
 
-const initializePromise = i18next.use(initLitI18n).init({
+i18next.use(initLitI18n).init({
     lng: 'en',
     resources: {
         en: {
@@ -22,5 +22,5 @@ const initializePromise = i18next.use(initLitI18n).init({
 });
 
 // eslint-disable-next-line require-jsdoc
-const t = (keys: string, options?: Record<string, unknown>) => translateWhen(initializePromise, keys, options);
 console.log(t('test'));
+
