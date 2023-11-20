@@ -3,8 +3,15 @@ import { noChange } from 'lit-html';
 import { directive, AsyncDirective } from 'lit-html/async-directive.js';
 import { PartType } from 'lit-html/directive.js';
 
-/** @type {import('i18next').i18n} */
+/** @type {import('i18next').i18n | null} */
 let i18n = null;
+
+/** @type {(i18n: import('i18next').i18n) => void} */
+let i18nResolver = () => {};
+
+const i18Provider = new Promise((res) => {
+    i18nResolver = res;
+});
 
 /** @type {import('i18next').ThirdPartyModule} */
 export const initLitI18n = {
@@ -30,11 +37,12 @@ export const initLitI18n = {
  */
 export const setI18n = (i18nextInstance) => {
     i18n = i18nextInstance;
+    i18nResolver(i18n);
 };
 
 /**
  * Used to keep track of Parts that need to be updated should the language change.
- * @type {Map<TranslateBase, { keys: string|string[]; options: {}; }>}
+ * @type {Map<TranslateBase, { keys?: string|string[]; options?: {}; }>}
  */
 export const registry = new Map();
 
@@ -68,8 +76,8 @@ const updateAll = () => {
 /**
  * Lazily sets up i18next. Incase this library is loaded before i18next has been loaded.
  * This defers i18next setup until the first translation is requested.
- * @param {string|string[]} keys
- * @param {any} opts
+ * @param {string|string[]} [keys]
+ * @param {any} [opts]
  * @returns {string}
  */
 function translateAndInit(keys, opts) {
@@ -125,7 +133,7 @@ class TranslateBase extends AsyncDirective {
     }
 
     /**
-     * @param {string | string[]} keys - translation key
+     * @param {string | string[]} [keys] - translation key
      * @param {?any} [options] - i18next translation options
      * @returns {string|Symbol} translated string
      */
@@ -156,11 +164,14 @@ class TranslateBase extends AsyncDirective {
 class Translate extends TranslateBase {
     /**
      * @param {string | string[]} [keys] - translation key
-     * @param {?any} [options] - i18next translation options
+     * @param {any} [options] - i18next translation options
      * @returns {string|Symbol} translated string
      */
     render(keys, options) {
-        return this.translate(keys, options);
+        i18Provider?.then(() => {
+            this.setValue(this.translate(keys, options));
+        });
+        return noChange;
     }
 }
 
@@ -169,11 +180,11 @@ class TranslateWhen extends TranslateBase {
     /**
      * @param {Promise} [promise] to wait for
      * @param {string | string[]} [keys] - translation key
-     * @param {?any} [options] - i18next translation options
+     * @param {any} [options] - i18next translation options
      * @returns {string|Symbol} translated string
      */
     render(promise, keys, options) {
-        promise.then(() => {
+        promise?.then(() => {
             this.setValue(this.translate(keys, options));
         });
         return noChange;
@@ -206,6 +217,7 @@ class TranslateWhen extends TranslateBase {
 export const translate = directive(Translate);
 
 /**
+ * @deprecated as of 4.0.0 use `translate` which already guarantees i18next is initialized
  * Can be used like translate but it also takes a Promise. This can be used if you can't guarantee if the i18next resource bundle is loaded.
  * @example
  * ```js
