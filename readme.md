@@ -6,88 +6,73 @@ i18next lit-html directive (could possible add other i18n backends).
 ## Install
     npm install lit-i18n
 ## Usage
-### Config
-Nothing new here. Just use the usual i18next [config](https://www.i18next.com/overview/configuration-options). You can import from i18next.
-
+### Initialization
+Pass in the `initLitI18n` as an i18next plugin before initializing i18next with a [config](https://www.i18next.com/overview/configuration-options).
 ```js
 import i18next from 'i18next';
 import { initLitI18n } from 'lit-i18n'; 
-i18next
-    .use(initLitI18n)
-    .init({
-        lng: 'en',
-        resources: {
-            en: {
-                translation: {
-                    whatishow: '{{what}} is {{how}}',
-                    datamodel: '{{person.name}} is a {{person.age}} year old and is male: {{person.male}}',
-                },
-            },
-            fr: {
-                translation: {
-                    whatishow: '{{what}} est {{how}}',
-                    datamodel: '{{person.name}} a {{person.age}} ans et est un homme: {{person.male}}',
-                },
-            },
-        },
-    });
+
+i18next.use(initLitI18n).init({...});
 ```
 
-### Translations
-lit-i18n exposes two directives called translate and translateWhen.
+### Performing Translations
+Use the lit-i18n translate directive to perform translations in lit-html templates.
+
 The translate directive has the same signature and functionality as the i18next [t method](https://www.i18next.com/overview/api#t).
 
-#### translate
 ```js    
 import { translate as t } from 'lit-i18n';
-import { html, render } from 'lit-html';
+import { html } from 'lit-html';
 
-/** @typedef {{name: string; age: number; male: boolean}} Person */
-class I18nElement extends HTMLElement {
-    /** @returns {Person} */
-    get person() {
-        return this._person;
-    }
-
-    /** @param {Person} */
-    set person(value) {
-        this._person = value;
-        render(this.renderTemplate, this);
-    }
-
-    /** @inheritdoc */
-    connectedCallback() {
-        if (!this.person) {
-            this.person = {
-                name: 'None',
-                age: 0,
-                male: false,
-            };
-        }
-    }
-
-    /** @returns {import('lit-html/lit-html').TemplateResult} */
-    get renderTemplate() {
-        return html`
-            <div title="${t('whatishow', { what: 'i18next', how: 'great' })}"></div>
-            <span>${t('datamodel', { person: this.person })}</span>
-        `;
-    }
-}
+const template1 = html`${t('hello')}`;
+const template2 = html`${t('whatishow', { what: 'i18next', how: 'great' })}`;
+const template3 = html`${t('personDescription', { person: { name: fred, age: 34, male: true} })}`;
 ```
 
-#### translateWhen directive - postponing translations until they have loaded
-Screen flicker can occur if you load multiple namespaces and run translations prior to the translation resource being loaded. I18next returns promises that will resolve after the resources are ready.
-If this happens you can use `translateWhen`.
-`translateWhen` differs to translate in that it also accepts a Promise. This Promise would typically be the Promise returned by `i18next.init` or `i18next.loadNamespaces` or `i18next.loadLanguages`. The translateWhen directive will not try to translate the key until the Promise is resolved.
-Passing the Promise every single time you call the directive can get a little much so you can wrap the directive and call the wrapper instead, like this:
-
+### LitElement example
 ```js
-import { initLitI18n, translateWhen } from 'lit-i18n';
+import i18next from 'i18next';
+import { translate as t, initLitI18n } from 'lit-i18n';
+import { LitElement, html } from 'lit';
 
-const initializePromise = i18next.use(initLitI18n).init(....);
-const translateDirective = (keys, options) => translateWhen(initializePromise, keys, options);
+// Initialize i18next with lit-i18n and config
+i18next.use(initLitI18n).init({
+    lng: 'en',
+    resources: {
+        en: {
+            translation: {
+                whatishow: '{{what}} is {{how}}',
+                datamodel: '{{person.name}} is a {{person.age}} year old and is male: {{person.male}}',
+            },
+        },
+        fr: {
+            translation: {
+                whatishow: '{{what}} est {{how}}',
+                datamodel: '{{person.name}} a {{person.age}} ans et est un homme: {{person.male}}',
+            },
+        },
+    },
+});
 
-// Now you can use translateDirective in your lit-html templates.
-html`<div>${translateDirective('some.key')}</div>`
+// Create a LitElement that uses the lit-i18n translate directive
+customElements.define(
+    'test-i18n',
+    class TestI18n extends LitElement {
+        person = {
+            name: 'Fred',
+            age: 35,
+            male: true,
+        };
+
+        /** @returns {import('lit-html/lit-html').TemplateResult} */
+        render() {
+            return html`
+                <!-- Use translate directive as attribute -->
+                <div title="${t('whatishow', { what: 'i18next', how: 'great' })}"></div>
+                <!-- Use translate directive as Element text -->
+                <span>${t('datamodel', { person: this.person })}</span>
+            `;
+        }
+    },
+);
 ```

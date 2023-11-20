@@ -32,6 +32,8 @@
                     },
                 }
             }));
+
+            // For this example, use setTimeout to mimic latency of loading resources over a slow network connection.
             setTimeout(() => {
                 i18next.addResources('en', 'testns', {"name": "name is {{name}}"});
                 i18next.addResources('fr', 'testns', {"name": "nom est {{name}}"});
