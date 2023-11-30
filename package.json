@@ -1,58 +1,57 @@
 {
-  "name": "lit-i18n",
-  "version": "4.1.0",
-  "description": "lit-element based i18n solution backed by i18next",
-  "main": "index.js",
-  "files": [
-    "/index.js",
-    "/index.d.ts",
-    "/src/",
-    "/dist/"
-  ],
-  "scripts": {
-    "start": "web-dev-server --node-resolve --preserve-symlinks",
-    "test": "npm run test:watch",
-    "test:ci": "npm run test:unit",
-    "test:coverage": "npm run test:unit -- --coverage",
-    "test:watch": "npm run test:unit -- --watch",
-    "test:unit": "web-test-runner \"test/unit/**/*.js\" --node-resolve --preserve-symlinks",
-    "prepublishOnly": "npm run generateDeclarations",
-    "generateDeclarations": "node ./node_modules/typescript/bin/tsc -p d.tsconfig.json",
-    "removeDeclarations": "rimraf ./src/**/*.d.ts",
-    "tsc:test": "node ./node_modules/typescript/bin/tsc -p ./test/tsc/tsconfig.json",
-    "tsc:test:watch": "node ./node_modules/typescript/bin/tsc -p ./test/tsc/tsconfig.json --watch"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/colscott/lit-i18n.git"
-  },
-  "keywords": [
-    "i18n",
-    "lit-element",
-    "lit-html",
-    "i18n",
-    "web",
-    "component",
-    "lit html i18n",
-    "i18next"
-  ],
-  "author": "colin scott",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/colscott/lit-i18n/issues"
-  },
-  "homepage": "https://github.com/colscott/lit-i18n#readme",
-  "devDependencies": {
-    "@esm-bundle/chai": "^4.3.4-fix.0",
-    "@web/dev-server": "^0.1.25",
-    "@web/test-runner": "^0.13.20",
-    "dev-lib-colscott": "^2.0.0",
-    "i18next": ">=21.3.3",
-    "lit-html": ">=2.0.1",
-    "typescript": "^5.2.2"
-  },
-  "peerDependencies": {
-    "i18next": ">=21.3.3",
-    "lit-html": ">=2.0.1"
-  }
+    "name": "lit-i18n",
+    "version": "4.1.0",
+    "description": "lit-element based i18n solution backed by i18next",
+    "main": "index.js",
+    "files": [
+        "/index.js",
+        "/index.d.ts",
+        "/src/",
+        "/dist/"
+    ],
+    "scripts": {
+        "start": "web-dev-server --node-resolve --preserve-symlinks",
+        "test": "npm run test:watch",
+        "test:ci": "npm run test:unit",
+        "test:coverage": "npm run test:unit -- --coverage",
+        "test:watch": "npm run test:unit -- --watch",
+        "test:unit": "web-test-runner \"test/unit/**/*.js\" --node-resolve --preserve-symlinks",
+        "prepublishOnly": "npm run generateDeclarations",
+        "generateDeclarations": "node ./node_modules/typescript/bin/tsc -p d.tsconfig.json",
+        "removeDeclarations": "rimraf ./src/**/*.d.ts",
+        "tsc:test": "node ./node_modules/typescript/bin/tsc -p ./test/tsc/tsconfig.json",
+        "tsc:test:watch": "node ./node_modules/typescript/bin/tsc -p ./test/tsc/tsconfig.json --watch"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/colscott/lit-i18n.git"
+    },
+    "keywords": [
+        "i18n",
+        "lit-element",
+        "lit-html",
+        "i18n",
+        "web",
+        "component",
+        "lit html i18n",
+        "i18next"
+    ],
+    "author": "colin scott",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/colscott/lit-i18n/issues"
+    },
+    "homepage": "https://github.com/colscott/lit-i18n#readme",
+    "devDependencies": {
+        "@esm-bundle/chai": "^4.3.4-fix.0",
+        "@web/dev-server": "^0.1.25",
+        "@web/test-runner": "^0.13.20",
+        "dev-lib-colscott": "^2.0.0",
+        "i18next": ">=21.3.3",
+        "lit": ">=3.0.0",
+        "typescript": "^5.2.2"
+    },
+    "peerDependencies": {
+        "i18next": ">=21.3.3"
+    }
 }
