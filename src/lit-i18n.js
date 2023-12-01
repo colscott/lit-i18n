@@ -1,7 +1,6 @@
 // @ts-check
 import { noChange } from 'lit-html';
-import { directive, AsyncDirective } from 'lit-html/async-directive.js';
-import { PartType } from 'lit-html/directive.js';
+import { AsyncDirective, PartType, directive } from 'lit-html/async-directive.js';
 
 /** @type {import('i18next').i18n | null} */
 let i18n = null;
