@@ -58,7 +58,7 @@ export const registryCleanup = () => {
     });
 };
 
-/** lit-html does not seem to fire life cycle hook for part disconnected, we need to record and manage parts ourselves. */
+/** Parts rendered with plain `render()` never get `disconnected`, so removed ones are swept here. */
 setInterval(registryCleanup, 10000);
 
 let initialized = false;
@@ -130,6 +130,11 @@ class TranslateBase extends AsyncDirective {
         this.value = '';
         /** @type {import('lit-html/directive.js').PartInfo} */
         this.part = part;
+        /**
+         * The last keys and options translated, re-used when the directive is reconnected.
+         * @type {{ keys?: string|string[]; options?: {}; } | undefined}
+         */
+        this.details = undefined;
     }
 
     /**
@@ -139,7 +144,14 @@ class TranslateBase extends AsyncDirective {
      */
     translate(keys, options) {
         let opts = options;
-        registry.set(this, { keys, options: opts });
+        this.details = { keys, options: opts };
+
+        // Either detached, and `reconnected` commits the latest details, or discarded by lit-html and the part is no longer ours
+        if (this.isConnected === false) {
+            return noChange;
+        }
+
+        registry.set(this, this.details);
 
         if (typeof options === 'function') {
             opts = options();
@@ -147,7 +159,7 @@ class TranslateBase extends AsyncDirective {
 
         const translation = translateAndInit(keys, opts);
 
-        if (this.isConnected === false || translation === undefined || this.value === translation) {
+        if (translation === undefined || this.value === translation) {
             return noChange;
         }
 
@@ -157,6 +169,13 @@ class TranslateBase extends AsyncDirective {
     /** clean up the registry */
     disconnected() {
         registry.delete(this);
+    }
+
+    /** Registers for language changes again and catches up on any that happened while disconnected */
+    reconnected() {
+        if (this.details) {
+            this.setValue(this.translate(this.details.keys, this.details.options));
+        }
     }
 }
 

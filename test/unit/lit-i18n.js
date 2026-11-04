@@ -1,9 +1,9 @@
-/* global describe, before, after, it */
+/* global describe, before, after, beforeEach, afterEach, it */
 /* Jasmine will be loaded by the test framework. No need to import it. */
 import { expect } from '@esm-bundle/chai';
 import i18next from 'i18next';
 import { html, render } from 'lit-html';
-import { translate as t, registry, registryCleanup, initLitI18n } from '../../src/lit-i18n.js';
+import { translate as t, translateWhen, registry, registryCleanup, initLitI18n } from '../../src/lit-i18n.js';
 
 /** i18next config */
 const i18nInitialized = i18next.use(initLitI18n).init({
@@ -105,6 +105,54 @@ class I18nFull extends HTMLElement {
 }
 customElements.define('i18n-full', I18nFull);
 
+/**
+ * Host that manages its RootPart the way LitElement does: the part is disconnected when the element leaves the DOM
+ * and reconnected when it returns, so directives get their `disconnected`/`reconnected` callbacks.
+ */
+class I18nMovable extends HTMLElement {
+    /** @inheritdoc */
+    constructor() {
+        super();
+        this.key = 'key';
+        /** @type {import('lit-html').RootPart | undefined} */
+        this.rootPart = undefined;
+    }
+
+    /** @inheritdoc */
+    connectedCallback() {
+        if (this.rootPart) {
+            this.rootPart.setConnected(true);
+        } else {
+            this.update();
+        }
+    }
+
+    /** @inheritdoc */
+    disconnectedCallback() {
+        this.rootPart?.setConnected(false);
+    }
+
+    /** Renders the current key, connected or not, like a LitElement property change would */
+    update() {
+        this.rootPart = render(
+            html`<span class="text">${t(this.key)}</span><div class="attr" title="${t(this.key)}"></div>`,
+            this,
+            { isConnected: this.isConnected },
+        );
+    }
+
+    /** @returns {string} */
+    get text() {
+        return this.querySelector('.text').textContent;
+    }
+
+    /** @returns {string} */
+    get attr() {
+        return this.querySelector('.attr').title;
+    }
+}
+customElements.define('i18n-movable', I18nMovable);
+
 /** @type {Array<Element>} */
 let elements = [];
 
@@ -192,6 +240,108 @@ describe('Events', () => {
         expect(intElem.title).to.equal('i18next est great');
         expect(input.placeholder).to.equal('Entrez le nom');
         expect(personElem.innerText).to.equal('Fred a 46 ans et est un homme: true');
+    });
+});
+
+describe('Moving and detaching', () => {
+    /** @type {HTMLElement} */
+    let otherContainer;
+    /** @type {I18nMovable} */
+    let elem;
+
+    beforeEach(async () => {
+        otherContainer = document.body.appendChild(document.createElement('div'));
+        elem = /** @type {I18nMovable} */ (addElement('i18n-movable'));
+        await nextThread();
+        expect(elem.text).to.equal('Some translation');
+        expect(elem.attr).to.equal('Some translation');
+    });
+
+    afterEach(async () => {
+        tidyElements();
+        otherContainer.remove();
+        await i18next.changeLanguage('en');
+    });
+
+    it('Should follow language changes after a move', async () => {
+        otherContainer.append(elem);
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        expect(elem.text).to.equal('Un peu de traduction');
+        expect(elem.attr).to.equal('Un peu de traduction');
+    });
+
+    it('Should show a language change that happened while detached', async () => {
+        elem.remove();
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        otherContainer.append(elem);
+        await nextThread();
+        expect(elem.text).to.equal('Un peu de traduction');
+        expect(elem.attr).to.equal('Un peu de traduction');
+    });
+
+    it('Should show a key changed while detached once re-attached', async () => {
+        elem.remove();
+        elem.key = 'entername';
+        elem.update();
+        await nextThread();
+        otherContainer.append(elem);
+        await nextThread();
+        expect(elem.text).to.equal('Enter Name');
+        expect(elem.attr).to.equal('Enter Name');
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        expect(elem.text).to.equal('Entrez le nom');
+        expect(elem.attr).to.equal('Entrez le nom');
+    });
+
+    it('Should not hold detached parts in the registry', async () => {
+        elem.remove();
+        elem.key = 'entername';
+        elem.update();
+        await nextThread();
+        expect([...registry.keys()].some((directive) => directive.isConnected === false)).to.equal(false);
+    });
+});
+
+describe('Discarded directives', () => {
+    /** @type {HTMLElement} */
+    let container;
+
+    beforeEach(() => {
+        container = document.body.appendChild(document.createElement('div'));
+    });
+
+    afterEach(() => {
+        container.remove();
+    });
+
+    it('Should not overwrite content that replaced a translation', async () => {
+        /** @param {unknown} value */
+        const template = (value) => html`<p title="${value}">${value}</p>`;
+        render(template(t('key')), container);
+        render(template('replaced'), container);
+        await nextThread();
+        const paragraph = container.querySelector('p');
+        expect(paragraph.textContent).to.equal('replaced');
+        expect(paragraph.title).to.equal('replaced');
+    });
+
+    it('Should not overwrite content that replaced a pending translateWhen', async () => {
+        /** @type {() => void} */
+        let loaded = () => {};
+        const loading = new Promise((res) => {
+            loaded = res;
+        });
+        /** @param {unknown} value */
+        const template = (value) => html`<p>${value}</p>`;
+        render(template(translateWhen(loading, 'key')), container);
+        render(template(html`<i>data</i>`), container);
+        loaded();
+        await nextThread();
+        expect(container.querySelector('p').textContent).to.equal('data');
+        expect(container.querySelector('i')).to.not.equal(null);
     });
 });
 
