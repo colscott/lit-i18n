@@ -2,6 +2,7 @@
     "include": ["./index.js", "src/**/*"],
     "compilerOptions": {
       "allowJs": true,
+      "lib": ["es2021", "dom"],
       "declaration": true,
       "emitDeclarationOnly": true
     }

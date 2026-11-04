@@ -47,13 +47,30 @@ export const setI18n = (i18nextInstance) => {
 export const registry = new Map();
 
 /**
+ * Parts swept from the registry while out of the document but still connected to lit-html, i.e. rendered with plain
+ * `render()`, which never calls `reconnected`. Held weakly so they can be garbage collected, and re-registered on
+ * the next language change in case they are put back in the document.
+ * @type {Set<WeakRef<TranslateBase>>}
+ */
+const swept = new Set();
+
+/**
  * Removes parts that are no longer connected.
  * Called internally on a timer but can also be called manually.
  */
 export const registryCleanup = () => {
+    swept.forEach((ref) => {
+        const part = ref.deref();
+        if (part === undefined || registry.has(part)) {
+            swept.delete(ref);
+        }
+    });
     registry.forEach((details, part) => {
         if (part.isConnected === false || isConnected(part) === false) {
             registry.delete(part);
+            if (part.isConnected && typeof WeakRef === 'function') {
+                swept.add(new WeakRef(part));
+            }
         }
     });
 };
@@ -63,11 +80,22 @@ setInterval(registryCleanup, 10000);
 
 let initialized = false;
 
-/** Iterates all registered translate directives re-evaluating the translations */
+/**
+ * Iterates all registered translate directives re-evaluating the translations.
+ * Parts out of the document are updated too, so they are current if put back.
+ */
 const updateAll = () => {
     registry.forEach((details, part) => {
-        if (part.isConnected && isConnected(part)) {
+        if (part.isConnected) {
             part.setValue(part.translate(details.keys, details.options));
+        }
+    });
+    swept.forEach((ref) => {
+        swept.delete(ref);
+        const part = ref.deref();
+        // `translate` registers it again, the next sweep moves it back here if still out of the document
+        if (part?.isConnected && part.details && !registry.has(part)) {
+            part.setValue(part.translate(part.details.keys, part.details.options));
         }
     });
 };

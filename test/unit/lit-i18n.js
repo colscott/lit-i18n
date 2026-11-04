@@ -347,6 +347,78 @@ describe('Discarded directives', () => {
     });
 });
 
+describe('Plain render() hosts', () => {
+    /** @type {Element} */
+    let container;
+    /** @type {HTMLSpanElement} */
+    let span;
+
+    /** @param {unknown} value */
+    const template = (value) => html`<span title="${value}">${value}</span>`;
+
+    const expectFrench = () => {
+        expect(span.textContent).to.equal('Un peu de traduction');
+        expect(span.title).to.equal('Un peu de traduction');
+    };
+
+    beforeEach(async () => {
+        container = addElement('div');
+        render(template(t('key')), container);
+        await nextThread();
+        span = container.querySelector('span');
+        expect(span.textContent).to.equal('Some translation');
+    });
+
+    afterEach(async () => {
+        tidyElements();
+        await i18next.changeLanguage('en');
+    });
+
+    it('Should show a language change made while detached', async () => {
+        container.remove();
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        document.body.append(container);
+        expectFrench();
+    });
+
+    it('Should follow language changes after being swept while detached', async () => {
+        container.remove();
+        registryCleanup();
+        document.body.append(container);
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        expectFrench();
+    });
+
+    it('Should show a language change made after being swept while detached', async () => {
+        container.remove();
+        registryCleanup();
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        document.body.append(container);
+        expectFrench();
+    });
+
+    it('Should release swept parts from the registry', () => {
+        const directives = new Set(registry.keys());
+        container.remove();
+        registryCleanup();
+        expect([...registry.keys()].filter((directive) => !directives.has(directive))).to.have.length(0);
+        expect(registry.size).to.be.lessThan(directives.size);
+    });
+
+    it('Should not update a swept directive that was then discarded', async () => {
+        container.remove();
+        registryCleanup();
+        render(template('replaced'), container);
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        expect(span.textContent).to.equal('replaced');
+        expect(span.title).to.equal('replaced');
+    });
+});
+
 describe('Options as a function', () => {
     afterEach(async () => {
         tidyElements();
