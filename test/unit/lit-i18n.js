@@ -347,6 +347,28 @@ describe('Discarded directives', () => {
     });
 });
 
+describe('Options as a function', () => {
+    afterEach(async () => {
+        tidyElements();
+        await i18next.changeLanguage('en');
+    });
+
+    it('Should evaluate the options again on a language change', async () => {
+        const container = addElement('div');
+        let name = 'Fred';
+        render(html`<span title="${t('introduceself', () => ({ name }))}">${t('introduceself', () => ({ name }))}</span>`, container);
+        await nextThread();
+        const span = container.querySelector('span');
+        expect(span.textContent).to.equal('My name is Fred');
+        expect(span.title).to.equal('My name is Fred');
+        name = 'Bob';
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        expect(span.textContent).to.equal("Je m'appelle Bob");
+        expect(span.title).to.equal("Je m'appelle Bob");
+    });
+});
+
 describe('Empty translations', () => {
     /** @type {I18nMovable} */
     let elem;

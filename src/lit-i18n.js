@@ -67,8 +67,7 @@ let initialized = false;
 const updateAll = () => {
     registry.forEach((details, part) => {
         if (part.isConnected && isConnected(part)) {
-            const translation = translateAndInit(details.keys, details.options);
-            part.setValue(translation);
+            part.setValue(part.translate(details.keys, details.options));
         }
     });
 };
