@@ -18,6 +18,7 @@ const i18nInitialized = i18next.use(initLitI18n).init({
                 whatishow: '{{what}} is {{how}}',
                 datamodel: '{{person.name}} is a {{person.age}} year old and is male: {{person.male}}',
                 entername: 'Enter Name',
+                optional: 'Optional',
             },
         },
         fr: {
@@ -28,6 +29,7 @@ const i18nInitialized = i18next.use(initLitI18n).init({
                 whatishow: '{{what}} est {{how}}',
                 datamodel: '{{person.name}} a {{person.age}} ans et est un homme: {{person.male}}',
                 entername: 'Entrez le nom',
+                optional: '',
             },
         },
     },
@@ -342,6 +344,48 @@ describe('Discarded directives', () => {
         await nextThread();
         expect(container.querySelector('p').textContent).to.equal('data');
         expect(container.querySelector('i')).to.not.equal(null);
+    });
+});
+
+describe('Empty translations', () => {
+    /** @type {I18nMovable} */
+    let elem;
+
+    beforeEach(async () => {
+        elem = /** @type {I18nMovable} */ (addElement('i18n-movable'));
+        elem.key = 'optional';
+        elem.update();
+        await nextThread();
+        expect(elem.text).to.equal('Optional');
+        expect(elem.attr).to.equal('Optional');
+    });
+
+    afterEach(async () => {
+        tidyElements();
+        await i18next.changeLanguage('en');
+    });
+
+    it('Should clear when re-rendered with a key that translates to empty', async () => {
+        await i18next.changeLanguage('fr');
+        elem.key = 'key';
+        elem.update();
+        await nextThread();
+        expect(elem.text).to.equal('Un peu de traduction');
+        elem.key = 'optional';
+        elem.update();
+        await nextThread();
+        expect(elem.text).to.equal('');
+        expect(elem.attr).to.equal('');
+    });
+
+    it('Should clear on re-attach after changing to a language where the key is empty', async () => {
+        elem.remove();
+        await i18next.changeLanguage('fr');
+        document.body.append(elem);
+        elements.push(elem);
+        await nextThread();
+        expect(elem.text).to.equal('');
+        expect(elem.attr).to.equal('');
     });
 });
 

@@ -127,7 +127,6 @@ class TranslateBase extends AsyncDirective {
     constructor(part) {
         super(part);
 
-        this.value = '';
         /** @type {import('lit-html/directive.js').PartInfo} */
         this.part = part;
         /**
@@ -159,11 +158,8 @@ class TranslateBase extends AsyncDirective {
 
         const translation = translateAndInit(keys, opts);
 
-        if (translation === undefined || this.value === translation) {
-            return noChange;
-        }
-
-        return translation;
+        // lit-html skips committing a value identical to the current one
+        return translation === undefined ? noChange : translation;
     }
 
     /** clean up the registry */
