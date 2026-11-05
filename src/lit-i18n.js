@@ -47,30 +47,70 @@ export const setI18n = (i18nextInstance) => {
 export const registry = new Map();
 
 /**
+ * Parts swept from the registry while out of the document but still connected to lit-html, i.e. rendered with plain
+ * `render()`, which never calls `reconnected`. Held weakly so they can be garbage collected, and re-registered on
+ * the next language change in case they are put back in the document.
+ * @type {Set<WeakRef<TranslateBase>>}
+ */
+const swept = new Set();
+
+/**
  * Removes parts that are no longer connected.
  * Called internally on a timer but can also be called manually.
  */
 export const registryCleanup = () => {
+    swept.forEach((ref) => {
+        const part = ref.deref();
+        if (part === undefined || registry.has(part)) {
+            swept.delete(ref);
+        }
+    });
     registry.forEach((details, part) => {
         if (part.isConnected === false || isConnected(part) === false) {
             registry.delete(part);
+            if (part.isConnected && isWritable(part) && typeof WeakRef === 'function') {
+                swept.add(new WeakRef(part));
+            }
         }
     });
 };
 
-/** lit-html does not seem to fire life cycle hook for part disconnected, we need to record and manage parts ourselves. */
+/** Parts rendered with plain `render()` never get `disconnected`, so removed ones are swept here. */
 setInterval(registryCleanup, 10000);
 
 let initialized = false;
 
-/** Iterates all registered translate directives re-evaluating the translations */
+/**
+ * Iterates all registered translate directives re-evaluating the translations.
+ * Parts out of the document are updated too, so they are current if put back.
+ */
 const updateAll = () => {
     registry.forEach((details, part) => {
-        if (part.isConnected && isConnected(part)) {
-            const translation = translateAndInit(details.keys, details.options);
-            part.setValue(translation);
+        if (part.isConnected && isWritable(part)) {
+            update(part, details);
         }
     });
+    swept.forEach((ref) => {
+        swept.delete(ref);
+        const part = ref.deref();
+        // `translate` registers it again, the next sweep moves it back here if still out of the document
+        if (part?.isConnected && part.details && isWritable(part) && !registry.has(part)) {
+            update(part, part.details);
+        }
+    });
+};
+
+/**
+ * Re-evaluates one part, so a part that throws cannot stop the others updating.
+ * @param {TranslateBase} part
+ * @param {{ keys?: string|string[]; options?: {}; }} details
+ */
+const update = (part, details) => {
+    try {
+        part.setValue(part.translate(details.keys, details.options));
+    } catch (error) {
+        console.error(error);
+    }
 };
 
 /**
@@ -118,6 +158,17 @@ const isConnected = (translateDirective) => {
     throw new Error('Unsupported Part');
 };
 
+/**
+ * Whether lit-html can still write to the part, in or out of the document.
+ * A child part's marker nodes are lost when its container is cleared outside lit-html.
+ * @param {TranslateBase} translateDirective
+ * @returns {boolean}
+ */
+const isWritable = (translateDirective) => {
+    const part = /** @type {import('lit-html/directive.js').Part} */ (translateDirective.part);
+    return part.type !== PartType.CHILD || part.parentNode != null;
+};
+
 /** */
 class TranslateBase extends AsyncDirective {
     /** @abstract */
@@ -127,9 +178,13 @@ class TranslateBase extends AsyncDirective {
     constructor(part) {
         super(part);
 
-        this.value = '';
         /** @type {import('lit-html/directive.js').PartInfo} */
         this.part = part;
+        /**
+         * The last keys and options translated, re-used when the directive is reconnected.
+         * @type {{ keys?: string|string[]; options?: {}; } | undefined}
+         */
+        this.details = undefined;
     }
 
     /**
@@ -139,7 +194,14 @@ class TranslateBase extends AsyncDirective {
      */
     translate(keys, options) {
         let opts = options;
-        registry.set(this, { keys, options: opts });
+        this.details = { keys, options: opts };
+
+        // Either detached, and `reconnected` commits the latest details, or discarded by lit-html and the part is no longer ours
+        if (this.isConnected === false) {
+            return noChange;
+        }
+
+        registry.set(this, this.details);
 
         if (typeof options === 'function') {
             opts = options();
@@ -147,16 +209,20 @@ class TranslateBase extends AsyncDirective {
 
         const translation = translateAndInit(keys, opts);
 
-        if (this.isConnected === false || translation === undefined || this.value === translation) {
-            return noChange;
-        }
-
-        return translation;
+        // lit-html skips committing a value identical to the current one
+        return translation === undefined ? noChange : translation;
     }
 
     /** clean up the registry */
     disconnected() {
         registry.delete(this);
+    }
+
+    /** Registers for language changes again and catches up on any that happened while disconnected */
+    reconnected() {
+        if (this.details) {
+            this.setValue(this.translate(this.details.keys, this.details.options));
+        }
     }
 }
 
