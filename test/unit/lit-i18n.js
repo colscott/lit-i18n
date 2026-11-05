@@ -408,6 +408,37 @@ describe('Plain render() hosts', () => {
         expect(registry.size).to.be.lessThan(directives.size);
     });
 
+    it('Should keep updating other parts when a container is cleared outside lit-html', async () => {
+        const cleared = addElement('div');
+        render(html`${t('key')}`, cleared);
+        const healthy = addElement('div');
+        render(html`${t('key')}`, healthy);
+        await nextThread();
+        cleared.textContent = '';
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        expect(healthy.textContent).to.equal('Un peu de traduction');
+        registryCleanup();
+        await i18next.changeLanguage('en');
+        await nextThread();
+        expect(healthy.textContent).to.equal('Some translation');
+    });
+
+    it('Should keep updating other parts when a translation throws', async () => {
+        const torn = addElement('div');
+        /** @type {{ name: string } | null} */
+        let state = { name: 'Fred' };
+        render(html`<span>${t('introduceself', () => ({ name: state.name }))}</span>`, torn);
+        const healthy = addElement('div');
+        render(html`<span>${t('key')}</span>`, healthy);
+        await nextThread();
+        torn.remove();
+        state = null;
+        await i18next.changeLanguage('fr');
+        await nextThread();
+        expect(healthy.textContent).to.equal('Un peu de traduction');
+    });
+
     it('Should not update a swept directive that was then discarded', async () => {
         container.remove();
         registryCleanup();

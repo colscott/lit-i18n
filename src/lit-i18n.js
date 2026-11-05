@@ -68,7 +68,7 @@ export const registryCleanup = () => {
     registry.forEach((details, part) => {
         if (part.isConnected === false || isConnected(part) === false) {
             registry.delete(part);
-            if (part.isConnected && typeof WeakRef === 'function') {
+            if (part.isConnected && isWritable(part) && typeof WeakRef === 'function') {
                 swept.add(new WeakRef(part));
             }
         }
@@ -86,18 +86,31 @@ let initialized = false;
  */
 const updateAll = () => {
     registry.forEach((details, part) => {
-        if (part.isConnected) {
-            part.setValue(part.translate(details.keys, details.options));
+        if (part.isConnected && isWritable(part)) {
+            update(part, details);
         }
     });
     swept.forEach((ref) => {
         swept.delete(ref);
         const part = ref.deref();
         // `translate` registers it again, the next sweep moves it back here if still out of the document
-        if (part?.isConnected && part.details && !registry.has(part)) {
-            part.setValue(part.translate(part.details.keys, part.details.options));
+        if (part?.isConnected && part.details && isWritable(part) && !registry.has(part)) {
+            update(part, part.details);
         }
     });
+};
+
+/**
+ * Re-evaluates one part, so a part that throws cannot stop the others updating.
+ * @param {TranslateBase} part
+ * @param {{ keys?: string|string[]; options?: {}; }} details
+ */
+const update = (part, details) => {
+    try {
+        part.setValue(part.translate(details.keys, details.options));
+    } catch (error) {
+        console.error(error);
+    }
 };
 
 /**
@@ -143,6 +156,17 @@ const isConnected = (translateDirective) => {
     if (part.type === PartType.EVENT) return part.element.isConnected;
     if (part.type === PartType.ELEMENT) return part.element.isConnected;
     throw new Error('Unsupported Part');
+};
+
+/**
+ * Whether lit-html can still write to the part, in or out of the document.
+ * A child part's marker nodes are lost when its container is cleared outside lit-html.
+ * @param {TranslateBase} translateDirective
+ * @returns {boolean}
+ */
+const isWritable = (translateDirective) => {
+    const part = /** @type {import('lit-html/directive.js').Part} */ (translateDirective.part);
+    return part.type !== PartType.CHILD || part.parentNode != null;
 };
 
 /** */
